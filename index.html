@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leela — The Game of Self-Knowledge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Special+Elite&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-left">
+    <span class="mark">LĪLĀ</span>
+    <span class="subtitle">The Game of Self-Knowledge</span>
+  </div>
+  <div class="masthead-right">
+    <span class="meta" id="session-meta">Session — new</span>
+    <button class="link" id="open-history">Past sessions</button>
+  </div>
+</header>
+
+<main class="layout">
+
+  <!-- LEFT COLUMN — question, dice, current square -->
+  <section class="left-col">
+
+    <!-- PHASE 1 : Ask a question -->
+    <div class="phase phase-question" data-phase="question">
+      <div class="plate">
+        <div class="plate-label">01 — Pose your question</div>
+        <h1 class="display">What do you bring to the board?</h1>
+        <p class="body">
+          Leela begins with a question — one you cannot easily answer. Hold it loosely. The dice will not give you a verdict; they will show you what the question is made of.
+        </p>
+        <textarea id="question-input" placeholder="Write your question here…" rows="4"></textarea>
+        <div class="actions">
+          <button class="btn-primary" id="begin-btn">Begin →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 : Roll to enter (need a 6 in six attempts) -->
+    <div class="phase phase-entering" data-phase="entering" hidden>
+      <div class="plate">
+        <div class="plate-label">02 — Roll to enter</div>
+        <h2 class="display-sm">A six opens the board.</h2>
+        <p class="body">
+          You have six attempts to roll a six. If none of them lands, the board is telling you the question is not yet right. Set it down and pose another.
+        </p>
+        <div class="question-echo" id="question-echo-entering"></div>
+        <div class="entry-counter">
+          <span class="entry-counter-label">Attempts</span>
+          <div class="entry-dots" id="entry-dots"></div>
+          <span class="entry-counter-count" id="entry-count">0 / 6</span>
+        </div>
+        <div class="dice-stage">
+          <div class="die" id="die-entering" data-face="?">?</div>
+          <button class="btn-primary" id="roll-entry-btn">Roll the die</button>
+        </div>
+        <div class="entry-log" id="entry-log"></div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 : Playing — show current square + meaning + note -->
+    <div class="phase phase-playing" data-phase="playing" hidden>
+      <div class="plate">
+        <div class="plate-label" id="playing-label">03 — On the board</div>
+
+        <div class="square-head">
+          <div class="square-num" id="square-num">—</div>
+          <div class="square-titles">
+            <div class="square-sanskrit" id="square-sanskrit">—</div>
+            <div class="square-english" id="square-english">—</div>
+          </div>
+        </div>
+
+        <div class="square-move" id="square-move"></div>
+
+        <p class="square-desc" id="square-desc">—</p>
+
+        <div class="note-block">
+          <label for="square-note" class="plate-label">Your note for this square</label>
+          <textarea id="square-note" placeholder="What does this field reflect about your question?" rows="4"></textarea>
+        </div>
+
+        <div class="dice-stage">
+          <div class="die" id="die-playing" data-face="?">?</div>
+          <button class="btn-primary" id="roll-play-btn">Roll →</button>
+        </div>
+
+        <div class="playing-meta">
+          <span class="meta" id="rolls-count">0 rolls</span>
+          <button class="link" id="end-session-btn">End session</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 : Won — reached 68 -->
+    <div class="phase phase-won" data-phase="won" hidden>
+      <div class="plate">
+        <div class="plate-label">04 — Cosmic Consciousness</div>
+        <h1 class="display">Vaikuṇṭha-loka.</h1>
+        <p class="body">
+          You have landed exactly on the sixty-eighth square. The game has answered the question, or has changed it past the point of needing an answer. Read your notes back from the top.
+        </p>
+        <div class="actions">
+          <button class="btn-secondary" id="view-summary-btn">Read the session</button>
+          <button class="btn-primary" id="new-game-btn">Begin a new question</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 5 : Failed entry — change question -->
+    <div class="phase phase-failed" data-phase="failed" hidden>
+      <div class="plate">
+        <div class="plate-label">— Six attempts, no six.</div>
+        <h2 class="display-sm">The board is asking for a different question.</h2>
+        <p class="body">
+          This is not failure — it is information. Pose another question and try again.
+        </p>
+        <div class="actions">
+          <button class="btn-primary" id="restart-btn">Pose another question</button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- RIGHT COLUMN — the board -->
+  <aside class="right-col">
+    <div class="board-frame">
+      <div class="board-legend">
+        <span class="legend-item"><span class="glyph glyph-arrow">↑</span>Arrow — virtue</span>
+        <span class="legend-item"><span class="glyph glyph-snake">∽</span>Snake — vice</span>
+        <span class="legend-item"><span class="glyph glyph-chakra">✦</span>Chakra</span>
+        <span class="legend-item"><span class="glyph glyph-goal">◉</span>Goal — 68</span>
+      </div>
+      <div class="board" id="board" aria-label="Leela board"></div>
+      <div class="board-caption">Eight rows of nine — birth at lower right, dissolution at upper left, the source at sixty-eight.</div>
+    </div>
+  </aside>
+
+</main>
+
+<!-- HISTORY DRAWER -->
+<div class="drawer" id="history-drawer" hidden>
+  <div class="drawer-inner">
+    <div class="drawer-head">
+      <span class="plate-label">Past sessions</span>
+      <button class="link" id="close-history">Close</button>
+    </div>
+    <div class="drawer-list" id="history-list"></div>
+  </div>
+</div>
+
+<!-- SUMMARY OVERLAY -->
+<div class="drawer" id="summary-drawer" hidden>
+  <div class="drawer-inner">
+    <div class="drawer-head">
+      <span class="plate-label">Session reading</span>
+      <button class="link" id="close-summary">Close</button>
+    </div>
+    <div class="summary-body" id="summary-body"></div>
+    <div class="drawer-foot">
+      <button class="link" id="copy-summary">Copy as text</button>
+    </div>
+  </div>
+</div>
+
+<script src="data/squares.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
