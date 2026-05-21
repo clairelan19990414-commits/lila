@@ -95,7 +95,27 @@ body {
   border-radius: var(--radius);
   padding: 36px 38px;
   box-shadow: var(--shadow-soft);
+  position: relative;
+  overflow: hidden;
 }
+.plate.art-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url('assets/lila-art-1000.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 0;
+  /* desaturate + lighten so the line art reads as a warm watermark */
+  filter: grayscale(1) contrast(0.9) brightness(1.08);
+  mix-blend-mode: multiply;
+}
+.plate.art-bg--faint::before  { opacity: 0.08; }
+.plate.art-bg--soft::before   { opacity: 0.14; }
+.plate.art-bg--strong::before { opacity: 0.32; }
+.plate.art-bg > * { position: relative; z-index: 1; }
 .plate-label {
   font-family: var(--ff-mono);
   font-size: 10px;
@@ -355,21 +375,26 @@ textarea:focus, input:focus {
   letter-spacing: 0.16em;
   color: var(--ink-soft);
 }
-.glyph {
+.legend-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
-  font-family: var(--ff-mono);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1;
+  width: 22px;
+  height: 22px;
 }
-.glyph-arrow  { color: var(--indigo); }
-.glyph-snake  { color: var(--terra); font-size: 17px; }
-.glyph-chakra { color: var(--ochre); font-size: 13px; }
-.glyph-goal   { color: var(--ink); font-size: 14px; }
+.legend-icon svg { width: 100%; height: 100%; }
+.lg-arrow  { color: var(--indigo); }
+.lg-snake  { color: var(--terra); }
+.lg-flipped svg { transform: rotate(180deg); }
+.legend-note {
+  font-family: var(--ff-body);
+  font-size: 11px;
+  font-style: italic;
+  color: var(--ink-soft);
+  text-transform: none;
+  letter-spacing: 0;
+  margin-left: auto;
+}
 
 .board {
   display: grid;
@@ -411,49 +436,44 @@ textarea:focus, input:focus {
   word-break: break-word;
   hyphens: auto;
 }
-.cell.has-arrow { border-color: var(--indigo); border-width: 1.5px; background: rgba(63, 65, 112, 0.05); }
-.cell.has-arrow .cell-num { color: var(--indigo); }
-.cell.has-arrow::before {
-  content: "↑";
+/* Cell borders/backgrounds for role cells are set inline via JS
+   so both endpoints of each snake / arrow share the same colour. */
+.cell.has-arrow-base .cell-num,
+.cell.has-snake-head .cell-num { font-weight: 600; }
+
+/* Role marks: SVG icons placed in cell corners. Inline color comes
+   from the pair definition in data/squares.js — each arrow and each
+   snake gets a unique colour shared by both endpoints. */
+.role-mark {
   position: absolute;
-  top: 3px; right: 5px;
-  font-family: var(--ff-mono);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--indigo);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
 }
-.cell.has-snake { border-color: var(--terra); border-width: 1.5px; background: rgba(139, 74, 54, 0.06); }
-.cell.has-snake .cell-num { color: var(--terra); }
-.cell.has-snake::before {
-  content: "∽";
-  position: absolute;
-  top: 3px; right: 5px;
-  font-family: var(--ff-mono);
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--terra);
-}
-.cell.is-chakra {
-  background: rgba(142, 111, 58, 0.08);
-  border-color: var(--ochre);
-}
-.cell.is-chakra .cell-num { color: var(--ochre-deep); }
-.cell.is-chakra::after {
-  content: "✦";
-  position: absolute;
-  bottom: 3px;
-  font-size: 10px;
-  color: var(--ochre-deep);
-  opacity: 0.7;
-}
+.role-mark svg { width: 100%; height: 100%; display: block; transition: transform 0.2s; }
+.role-mark--arrow { top: 4px; right: 4px; }
+.role-mark--snake { bottom: 4px; left: 4px; }
+
+/* Flipped variant — same shape, rotated 180° to indicate the
+   second endpoint of a snake or arrow (tail / tip). */
+.role-mark--flipped svg { transform: rotate(180deg); }
+
+/* Chakra cells — visual mark intentionally removed for now;
+   we'll wire in image-based chakra illustrations in a follow-up. */
+
+/* Goal cell — dark fill, light text, prominent chakra symbol */
 .cell.is-goal {
   background: var(--ink);
   border-color: var(--ink);
 }
 .cell.is-goal .cell-num,
 .cell.is-goal .cell-name { color: var(--bone); }
-.cell.is-goal::after { color: var(--ochre); opacity: 1; }
 
+/* Current position — solid indigo fill */
 .cell.is-current {
   background: var(--indigo);
   border-color: var(--indigo);
@@ -463,8 +483,10 @@ textarea:focus, input:focus {
 }
 .cell.is-current .cell-num  { color: var(--paper); font-weight: 600; }
 .cell.is-current .cell-name { color: var(--paper); }
-.cell.is-current::before,
-.cell.is-current::after { color: var(--paper); opacity: 1; }
+/* When the current marker is on a cell with arrow/snake role icons,
+   keep their pair color but lift them above the indigo fill with a
+   soft outline so they remain legible. */
+.cell.is-current .role-mark svg { filter: drop-shadow(0 0 1px var(--bone)) drop-shadow(0 0 2px var(--bone)); }
 
 .cell.is-visited {
   background: var(--paper-deep);

@@ -29,7 +29,7 @@
 
     <!-- PHASE 1 : Ask a question -->
     <div class="phase phase-question" data-phase="question">
-      <div class="plate">
+      <div class="plate art-bg art-bg--soft">
         <div class="plate-label">01 — Pose your question</div>
         <h1 class="display">What do you bring to the board?</h1>
         <p class="body">
@@ -44,7 +44,7 @@
 
     <!-- PHASE 2 : Roll to enter (need a 6 in six attempts) -->
     <div class="phase phase-entering" data-phase="entering" hidden>
-      <div class="plate">
+      <div class="plate art-bg art-bg--faint">
         <div class="plate-label">02 — Roll to enter</div>
         <h2 class="display-sm">A six opens the board.</h2>
         <p class="body">
@@ -100,7 +100,7 @@
 
     <!-- PHASE 4 : Won — reached 68 -->
     <div class="phase phase-won" data-phase="won" hidden>
-      <div class="plate">
+      <div class="plate art-bg art-bg--strong">
         <div class="plate-label">04 — Cosmic Consciousness</div>
         <h1 class="display">Vaikuṇṭha-loka.</h1>
         <p class="body">
@@ -115,7 +115,7 @@
 
     <!-- PHASE 5 : Failed entry — change question -->
     <div class="phase phase-failed" data-phase="failed" hidden>
-      <div class="plate">
+      <div class="plate art-bg art-bg--soft">
         <div class="plate-label">— Six attempts, no six.</div>
         <h2 class="display-sm">The board is asking for a different question.</h2>
         <p class="body">
@@ -132,12 +132,7 @@
   <!-- RIGHT COLUMN — the board -->
   <aside class="right-col">
     <div class="board-frame">
-      <div class="board-legend">
-        <span class="legend-item"><span class="glyph glyph-arrow">↑</span>Arrow — virtue</span>
-        <span class="legend-item"><span class="glyph glyph-snake">∽</span>Snake — vice</span>
-        <span class="legend-item"><span class="glyph glyph-chakra">✦</span>Chakra</span>
-        <span class="legend-item"><span class="glyph glyph-goal">◉</span>Goal — 68</span>
-      </div>
+      <div class="board-legend" id="board-legend"></div>
       <div class="board" id="board" aria-label="Leela board"></div>
       <div class="board-caption">Eight rows of nine — birth at lower right, dissolution at upper left, the source at sixty-eight.</div>
     </div>

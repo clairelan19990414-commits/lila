@@ -223,33 +223,47 @@ window.LEELA_SQUARES = [
 ];
 
 // Arrows (virtues — climb upward).
+// Each arrow gets a strongly distinct color shared by both endpoints.
+// Colors are picked from across the cool-to-violet spectrum, with
+// deliberate hue jumps + lightness variation so no two are confusable.
 window.LEELA_ARROWS = {
-  10: 23, // Purification → Heavenly plane
-  17: 69, // Compassion → Plane of the Absolute
-  20: 32, // Charity → Plane of balance
-  22: 60, // Dharma → Positive intellect
-  27: 41, // Selfless service → Plane of realisation
-  28: 50, // True faith → Plane of asceticism
-  37: 66, // Wisdom → Plane of bliss
-  45: 67, // Correct knowledge → Plane of cosmic good
-  46: 62, // Discernment → Happiness
-  54: 68, // Devotion → Cosmic consciousness (the goal)
+  10: { to: 23, color: '#1565c0' }, // Purification → Heavenly       — cobalt blue
+  17: { to: 69, color: '#00897b' }, // Compassion → Absolute          — teal
+  20: { to: 32, color: '#43a047' }, // Charity → Balance              — leaf green
+  22: { to: 60, color: '#6a1b9a' }, // Dharma → Positive intellect    — royal purple
+  27: { to: 41, color: '#3f51b5' }, // Selfless service → Realisation — indigo
+  28: { to: 50, color: '#00838f' }, // True faith → Asceticism        — dark cyan
+  37: { to: 66, color: '#7cb342' }, // Wisdom → Bliss                 — lime green
+  45: { to: 67, color: '#5e35b1' }, // Correct knowledge → Cosmic good— deep purple
+  46: { to: 62, color: '#00acc1' }, // Discernment → Happiness        — cyan
+  54: { to: 68, color: '#283593' }, // Devotion → Cosmic consciousness— dark indigo
 };
 
 // Snakes (vices — slide downward).
+// Strongly distinct warm-spectrum colors, again with big hue jumps.
 window.LEELA_SNAKES = {
-  12: 8,   // Jealousy → Envy
-  16: 4,   // Rejection → Greed
-  24: 7,   // Bad company → Vanity
-  29: 6,   // Immorality → Delusion
-  35: 3,   // Purgatory → Anger
-  44: 9,   // Ignorance → Plane of sensuality
-  52: 35,  // Violence → Purgatory
-  55: 3,   // Selfishness → Anger
-  61: 13,  // Negative intellect → Void
-  63: 2,   // Inertia → Illusion
-  72: 51,  // Tama-guna → Earth
+  12: { to: 8,  color: '#c62828' }, // Jealousy → Envy           — red
+  16: { to: 4,  color: '#ef6c00' }, // Rejection → Greed         — orange
+  24: { to: 7,  color: '#f9a825' }, // Bad company → Vanity      — amber gold
+  29: { to: 6,  color: '#6d4c41' }, // Immorality → Delusion     — brown
+  35: { to: 3,  color: '#ad1457' }, // Purgatory → Anger         — dark pink
+  44: { to: 9,  color: '#827717' }, // Ignorance → Sensuality    — olive
+  52: { to: 35, color: '#d84315' }, // Violence → Purgatory      — deep orange
+  55: { to: 3,  color: '#5d4037' }, // Selfishness → Anger       — dark brown
+  61: { to: 13, color: '#8e24aa' }, // Negative intellect → Void — magenta-purple
+  63: { to: 2,  color: '#e91e63' }, // Inertia → Illusion        — bright pink
+  72: { to: 51, color: '#ff6f00' }, // Tama-guna → Earth         — burnt amber
 };
 
-// Chakra fields — visually highlighted on the board.
-window.LEELA_CHAKRAS = [6, 14, 23, 32, 41, 50, 59, 68];
+// Chakra fields — the seven chakras + cosmic consciousness, aligned on the
+// central column. Each entry maps to its traditional petal count + symbol.
+window.LEELA_CHAKRAS = {
+  5:  { name: "muladhara",    petals: 4,    center: "square"    }, // root
+  14: { name: "svadhisthana", petals: 6,    center: "crescent"  }, // sacral
+  23: { name: "manipura",     petals: 10,   center: "triangle"  }, // solar plexus
+  32: { name: "anahata",      petals: 12,   center: "hexagram"  }, // heart
+  41: { name: "vishuddha",    petals: 16,   center: "circle"    }, // throat
+  50: { name: "ajna",         petals: 2,    center: "om"        }, // third eye
+  59: { name: "sahasrara",    petals: 24,   center: "bindu"     }, // crown
+  68: { name: "vaikuntha",    petals: 32,   center: "radiant"   }, // beyond
+};

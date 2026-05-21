@@ -39,6 +39,89 @@
 
   const board = $('#board');
 
+  // ----------------------------- Color helpers -----------------------------
+  function hexToRgba(hex, alpha) {
+    const h = hex.replace('#','');
+    const r = parseInt(h.slice(0,2), 16);
+    const g = parseInt(h.slice(2,4), 16);
+    const b = parseInt(h.slice(4,6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
+  // ----------------------------- SVG icon library -----------------------------
+  // Distinct symbols for the four directional roles + clean chakra line art.
+
+  // Computed once: which fields are arrow tips / snake tails,
+  // and which pair-color a tip / tail belongs to.
+  const ARROW_TIP_COLOR  = {};   // field -> color
+  const SNAKE_TAIL_COLOR = {};   // field -> color (first match wins if multiple)
+  for (const [from, info] of Object.entries(ARROWS)) {
+    ARROW_TIP_COLOR[info.to] = info.color;
+  }
+  for (const [from, info] of Object.entries(SNAKES)) {
+    if (!SNAKE_TAIL_COLOR[info.to]) SNAKE_TAIL_COLOR[info.to] = info.color;
+  }
+  const ARROW_TIPS  = new Set(Object.keys(ARROW_TIP_COLOR).map(Number));
+  const SNAKE_TAILS = new Set(Object.keys(SNAKE_TAIL_COLOR).map(Number));
+
+  // Arrow base — feathered fletching pointing upward (the launch).
+  function iconArrowBase() {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="role-icon"><path d="M12 20 V6"/><path d="M9 9 L12 6 L15 9"/><path d="M8 17 L12 14 L16 17"/><path d="M8 20 L12 17 L16 20"/></svg>`;
+  }
+  // Arrow tip — a target / radiating destination.
+  function iconArrowTip() {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="role-icon"><circle cx="12" cy="12" r="3.5"/><circle cx="12" cy="12" r="7"/><path d="M12 3 V5  M12 19 V21  M3 12 H5  M19 12 H21"/></svg>`;
+  }
+  // Snake head — serpent profile with eye.
+  function iconSnakeHead() {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="role-icon"><path d="M5 18 C5 14 9 14 9 10 C9 7 12 6 14 8 C16 10 17 8 19 8"/><circle cx="14.5" cy="8.5" r="0.9" fill="currentColor" stroke="none"/><path d="M19 8 L21 7 M19 8 L21 9"/></svg>`;
+  }
+  // Snake tail — coiled spiral curl.
+  function iconSnakeTail() {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="role-icon"><path d="M4 6 C8 6 8 10 5 10 C2 10 2 14 6 14 C10 14 10 18 7 18"/><path d="M14 18 C18 18 20 14 18 12 C16 10 13 11 13 14 C13 16 15 16 16 14"/></svg>`;
+  }
+
+  // Chakra — generic petal flower with a configurable center symbol.
+  function iconChakra(petals, center) {
+    const R_outer = 10, R_center = 4.4;
+    const petalArr = [];
+    for (let i = 0; i < petals; i++) {
+      const angle = (i / petals) * 360;
+      // Each petal: small ellipse positioned outward from center.
+      petalArr.push(
+        `<ellipse cx="12" cy="${12 - (R_outer - 0.4)}" rx="${Math.max(0.7, 2.4 - petals/16)}" ry="${Math.max(1, 3.4 - petals/14)}" transform="rotate(${angle} 12 12)"/>`
+      );
+    }
+    let centerSvg = '';
+    switch (center) {
+      case 'square':
+        centerSvg = `<rect x="${12-R_center/1.4}" y="${12-R_center/1.4}" width="${R_center*1.4}" height="${R_center*1.4}"/><path d="M${12-R_center/1.4} ${12+R_center/1.4} L12 ${12-R_center/1.6} L${12+R_center/1.4} ${12+R_center/1.4} Z"/>`;
+        break;
+      case 'crescent':
+        centerSvg = `<circle cx="12" cy="12" r="${R_center}"/><path d="M10 ${12-R_center/1.4} A ${R_center} ${R_center} 0 1 0 10 ${12+R_center/1.4}" fill="currentColor" opacity="0.55"/>`;
+        break;
+      case 'triangle':
+        centerSvg = `<circle cx="12" cy="12" r="${R_center}"/><path d="M${12-R_center/1.3} ${12-R_center/2} L${12+R_center/1.3} ${12-R_center/2} L12 ${12+R_center/1.1} Z"/>`;
+        break;
+      case 'hexagram':
+        centerSvg = `<circle cx="12" cy="12" r="${R_center}"/><path d="M${12-R_center/1.3} ${12-R_center/2.5} L${12+R_center/1.3} ${12-R_center/2.5} L12 ${12+R_center/1.0} Z"/><path d="M${12-R_center/1.3} ${12+R_center/2.5} L${12+R_center/1.3} ${12+R_center/2.5} L12 ${12-R_center/1.0} Z"/>`;
+        break;
+      case 'circle':
+        centerSvg = `<circle cx="12" cy="12" r="${R_center}"/><circle cx="12" cy="12" r="${R_center*0.45}"/>`;
+        break;
+      case 'om':
+        centerSvg = `<circle cx="12" cy="12" r="${R_center}"/><text x="12" y="14" text-anchor="middle" font-size="6" font-family="serif" fill="currentColor" stroke="none">ॐ</text>`;
+        break;
+      case 'bindu':
+        centerSvg = `<circle cx="12" cy="12" r="${R_center}"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/>`;
+        break;
+      case 'radiant':
+        centerSvg = `<circle cx="12" cy="12" r="${R_center}"/><circle cx="12" cy="12" r="${R_center*0.6}"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>`;
+        break;
+    }
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" class="chakra-svg">${petalArr.join('')}${centerSvg}</svg>`;
+  }
+
   // ----------------------------- Board render -----------------------------
   // Boustrophedon numbering: row 1 (bottom) goes 1→9 left-to-right,
   // row 2 goes 18→10 right-to-left, etc.
@@ -63,10 +146,21 @@
         const cell = document.createElement('div');
         cell.className = 'cell';
         cell.dataset.n = n;
-        if (ARROWS[n]) cell.classList.add('has-arrow');
-        if (SNAKES[n]) cell.classList.add('has-snake');
-        if (CHAKRAS.includes(n)) cell.classList.add('is-chakra');
-        if (sq.goal) cell.classList.add('is-goal');
+
+        // Role classes — note that a field can hold multiple roles (e.g. 35
+        // is both a snake head and a snake tail).
+        const isArrowBase = !!ARROWS[n];
+        const isArrowTip  = ARROW_TIPS.has(n);
+        const isSnakeHead = !!SNAKES[n];
+        const isSnakeTail = SNAKE_TAILS.has(n);
+        const chakra      = CHAKRAS[n];
+
+        if (isArrowBase) cell.classList.add('has-arrow-base');
+        if (isArrowTip)  cell.classList.add('has-arrow-tip');
+        if (isSnakeHead) cell.classList.add('has-snake-head');
+        if (isSnakeTail) cell.classList.add('has-snake-tail');
+        if (chakra)      cell.classList.add('is-chakra');
+        if (sq.goal)     cell.classList.add('is-goal');
 
         const num = document.createElement('div');
         num.className = 'cell-num';
@@ -78,7 +172,49 @@
         name.textContent = sq.sanskrit.toLowerCase();
         cell.appendChild(name);
 
-        cell.title = `${n}. ${sq.sanskrit} — ${sq.english}`;
+        // Pick the pair colour for this cell (priority: arrow base > arrow tip
+        // > snake head > snake tail). We then tint the entire cell — both
+        // endpoints of a given snake/arrow end up looking like the same lane.
+        let pairColor = null;
+        if (isArrowBase)      pairColor = ARROWS[n].color;
+        else if (isArrowTip)  pairColor = ARROW_TIP_COLOR[n];
+        else if (isSnakeHead) pairColor = SNAKES[n].color;
+        else if (isSnakeTail) pairColor = SNAKE_TAIL_COLOR[n];
+
+        if (pairColor) {
+          cell.style.backgroundColor = hexToRgba(pairColor, 0.18);
+          cell.style.borderColor = pairColor;
+          cell.style.borderWidth = '2px';
+        }
+
+        // Role icons — one shape per category, rotated 180° for the
+        // second endpoint. Each icon is tinted with the pair colour.
+        if (isArrowBase || isArrowTip) {
+          const r = document.createElement('div');
+          r.className = 'role-mark role-mark--arrow' + (isArrowTip ? ' role-mark--flipped' : '');
+          r.innerHTML = iconArrowBase();
+          const color = isArrowBase ? ARROWS[n].color : ARROW_TIP_COLOR[n];
+          r.style.color = color;
+          r.title = isArrowBase
+            ? `Arrow base — climbs to ${ARROWS[n].to}`
+            : `Arrow tip — destination`;
+          cell.appendChild(r);
+        }
+        if (isSnakeHead || isSnakeTail) {
+          const r = document.createElement('div');
+          r.className = 'role-mark role-mark--snake' + (isSnakeTail ? ' role-mark--flipped' : '');
+          r.innerHTML = iconSnakeHead();
+          const color = isSnakeHead ? SNAKES[n].color : SNAKE_TAIL_COLOR[n];
+          r.style.color = color;
+          r.title = isSnakeHead
+            ? `Snake head — slides down to ${SNAKES[n].to}`
+            : `Snake tail — landing point`;
+          cell.appendChild(r);
+        }
+
+        // Tooltip including chakra name if present
+        const chakraLabel = chakra ? ` · ${chakra.name}` : '';
+        cell.title = `${n}. ${sq.sanskrit} — ${sq.english}${chakraLabel}`;
         board.appendChild(cell);
       }
     }
@@ -320,11 +456,11 @@
     let finalPos = landed;
 
     if (ARROWS[landed]) {
-      roll.arrow = ARROWS[landed];
-      finalPos = ARROWS[landed];
+      roll.arrow = ARROWS[landed].to;
+      finalPos = ARROWS[landed].to;
     } else if (SNAKES[landed]) {
-      roll.snake = SNAKES[landed];
-      finalPos = SNAKES[landed];
+      roll.snake = SNAKES[landed].to;
+      finalPos = SNAKES[landed].to;
     }
 
     roll.finalSq = finalPos;
@@ -556,7 +692,24 @@
     }
   });
 
+  // ----------------------------- Legend -----------------------------
+  function renderLegend() {
+    const legend = $('#board-legend');
+    if (!legend) return;
+    const items = [
+      { svg: iconArrowBase(), label: 'Arrow base', cls: 'lg-arrow', flipped: false },
+      { svg: iconArrowBase(), label: 'Arrow tip',  cls: 'lg-arrow', flipped: true  },
+      { svg: iconSnakeHead(), label: 'Snake head', cls: 'lg-snake', flipped: false },
+      { svg: iconSnakeHead(), label: 'Snake tail', cls: 'lg-snake', flipped: true  },
+    ];
+    const note = `<span class="legend-note">Each pair shares a colour — match the base to its tip, the head to its tail.</span>`;
+    legend.innerHTML = items.map(it =>
+      `<span class="legend-item"><span class="legend-icon ${it.cls}${it.flipped ? ' lg-flipped' : ''}">${it.svg}</span>${it.label}</span>`
+    ).join('') + note;
+  }
+
   // ----------------------------- Init -----------------------------
   renderBoard();
+  renderLegend();
   showPhase('question');
 })();
