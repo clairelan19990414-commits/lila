@@ -78,22 +78,24 @@ body {
 /* ------------------------------- Layout ------------------------------- */
 .layout {
   display: grid;
-  grid-template-columns: minmax(380px, 1fr) minmax(540px, 1.1fr);
-  gap: 48px;
-  padding: 40px 44px 70px;
-  max-width: 1480px;
+  /* Panel fixed at 300px — the board takes everything else. */
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 28px;
+  padding: 24px 32px 52px;
+  max-width: 1800px;
   margin: 0 auto;
   align-items: start;
 }
 
-.left-col { position: sticky; top: 26px; }
+.panel-col { position: sticky; top: 22px; width: 300px; min-width: 0; }
+.board-col { min-width: 0; }
 
 /* ------------------------------- Plate (card) ------------------------------- */
 .plate {
   background: var(--paper);
   border: 1px solid var(--rule);
   border-radius: var(--radius);
-  padding: 36px 38px;
+  padding: 22px 22px;
   box-shadow: var(--shadow-soft);
   position: relative;
   overflow: hidden;
@@ -126,23 +128,24 @@ body {
 }
 .display {
   font-family: var(--ff-display);
-  font-size: 36px;
-  line-height: 1.15;
+  font-size: 26px;
+  line-height: 1.18;
   letter-spacing: -0.005em;
-  margin: 0 0 18px;
+  margin: 0 0 14px;
   color: var(--ink);
 }
 .display-sm {
   font-family: var(--ff-display);
-  font-size: 26px;
+  font-size: 20px;
   line-height: 1.2;
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   color: var(--ink);
 }
 .body {
-  margin: 0 0 22px;
+  margin: 0 0 16px;
   color: var(--ink-soft);
-  max-width: 56ch;
+  font-size: 14px;
+  line-height: 1.55;
 }
 
 /* ------------------------------- Buttons / inputs ------------------------------- */
@@ -256,31 +259,45 @@ textarea:focus, input:focus {
 .dice-stage {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 22px;
   margin: 14px 0 4px;
+  perspective: 360px;
 }
 .die {
-  width: 72px; height: 72px;
+  width: 76px; height: 76px;
   border: 1.5px solid var(--ink);
-  background: var(--bone);
-  font-family: var(--ff-display);
-  font-size: 34px;
+  background: var(--paper);
+  font-family: 'Helvetica Neue', system-ui, sans-serif;
+  font-size: 56px;
+  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--ink);
   user-select: none;
   border-radius: var(--radius);
-  transition: transform 0.4s cubic-bezier(.2,.7,.2,1.3), border-color 0.2s, color 0.2s;
-  box-shadow: var(--shadow-soft);
+  transition: border-color 0.2s, color 0.2s, box-shadow 0.3s;
+  box-shadow: inset 0 -3px 0 rgba(43,36,21,0.08), 0 4px 12px rgba(43,36,21,0.10);
+  transform-style: preserve-3d;
+  will-change: transform;
 }
-.die.rolling { animation: roll 0.55s cubic-bezier(.2,.7,.2,1.3); }
-@keyframes roll {
-  0%   { transform: rotate(0deg) scale(1); }
-  40%  { transform: rotate(180deg) scale(1.12); }
-  100% { transform: rotate(360deg) scale(1); }
+.die.rolling {
+  animation: tumble 0.95s cubic-bezier(.42, .08, .25, 1);
+  box-shadow: inset 0 -3px 0 rgba(43,36,21,0.08), 0 14px 28px rgba(43,36,21,0.18);
 }
-.die[data-face="6"] { border-color: var(--ochre); color: var(--ochre-deep); }
+@keyframes tumble {
+  0%   { transform: perspective(360px) rotateX(0deg)    rotateY(0deg)    rotateZ(0deg)   scale(1); }
+  15%  { transform: perspective(360px) rotateX(280deg)  rotateY(140deg)  rotateZ(40deg)  scale(1.12); }
+  35%  { transform: perspective(360px) rotateX(620deg)  rotateY(380deg)  rotateZ(90deg)  scale(1.22); }
+  60%  { transform: perspective(360px) rotateX(940deg)  rotateY(640deg)  rotateZ(160deg) scale(1.18); }
+  80%  { transform: perspective(360px) rotateX(1080deg) rotateY(820deg)  rotateZ(200deg) scale(1.08); }
+  100% { transform: perspective(360px) rotateX(1080deg) rotateY(1080deg) rotateZ(0deg)   scale(1); }
+}
+.die[data-face="6"] {
+  border-color: var(--ochre);
+  color: var(--ochre-deep);
+  box-shadow: inset 0 -3px 0 rgba(110,84,36,0.18), 0 6px 18px rgba(110,84,36,0.25);
+}
 
 /* ------------------------------- Playing — square reveal ------------------------------- */
 .square-head {
@@ -354,7 +371,7 @@ textarea:focus, input:focus {
   background: var(--paper);
   border: 1px solid var(--rule);
   border-radius: var(--radius);
-  padding: 30px 30px 24px;
+  padding: 18px 18px 14px;
   box-shadow: var(--shadow-soft);
 }
 .board-legend {
@@ -409,54 +426,65 @@ textarea:focus, input:focus {
   border: 1px solid var(--rule-soft);
   border-radius: var(--radius-sm);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 6px 4px;
-  gap: 3px;
+  padding: 3px 4px;
   position: relative;
+  min-width: 0;
   min-height: 0;
+  overflow: hidden;
   transition: background 0.2s, border-color 0.2s, transform 0.15s;
 }
 .cell-num {
+  position: absolute;
+  top: 3px;
+  left: 5px;
   font-family: var(--ff-mono);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   color: var(--ink-soft);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
+  z-index: 1;
+  pointer-events: none;
 }
 .cell-name {
-  font-family: var(--ff-display);
-  font-size: 13px;
+  /* Inter is much narrower than Special Elite, fits long names without
+     needing a microscopic font size. */
+  font-family: var(--ff-body);
+  font-weight: 500;
+  font-size: 11px;
   line-height: 1.05;
   color: var(--ink);
   text-align: center;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.01em;
   text-transform: lowercase;
-  word-break: break-word;
-  hyphens: auto;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  hyphens: none !important;
+  width: 100%;
+  /* font-size set inline by JS to auto-fit. */
 }
 /* Cell borders/backgrounds for role cells are set inline via JS
    so both endpoints of each snake / arrow share the same colour. */
 .cell.has-arrow-base .cell-num,
 .cell.has-snake-head .cell-num { font-weight: 600; }
 
-/* Role marks: SVG icons placed in cell corners. Inline color comes
-   from the pair definition in data/squares.js — each arrow and each
-   snake gets a unique colour shared by both endpoints. */
+/* Role marks: SVG icons placed in cell corners on the right side,
+   keeping the number (top-left) and name (centre) clear. */
 .role-mark {
   position: absolute;
-  width: 30px;
-  height: 30px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  z-index: 2;
+  z-index: 1;
 }
 .role-mark svg { width: 100%; height: 100%; display: block; transition: transform 0.2s; }
-.role-mark--arrow { top: 4px; right: 4px; }
-.role-mark--snake { bottom: 4px; left: 4px; }
+.role-mark--top    { top: 3px; right: 3px; }
+.role-mark--bottom { bottom: 3px; right: 3px; }
 
 /* Flipped variant — same shape, rotated 180° to indicate the
    second endpoint of a snake or arrow (tail / tip). */
@@ -630,7 +658,7 @@ textarea:focus, input:focus {
     gap: 28px;
     padding: 24px 20px 60px;
   }
-  .left-col { position: static; }
+  .panel-col { position: static; }
   .masthead { padding: 18px 20px; }
 }
 @media (max-width: 700px) {

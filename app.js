@@ -169,7 +169,9 @@
 
         const name = document.createElement('div');
         name.className = 'cell-name';
-        name.textContent = sq.sanskrit.toLowerCase();
+        // Use a U+2011 non-breaking hyphen so the browser can never wrap
+        // at a hyphen — regardless of any CSS quirk in white-space handling.
+        name.textContent = sq.sanskrit.toLowerCase().replace(/-/g, '‑');
         cell.appendChild(name);
 
         // Pick the pair colour for this cell (priority: arrow base > arrow tip
@@ -187,36 +189,76 @@
           cell.style.borderWidth = '2px';
         }
 
-        // Role icons — one shape per category, rotated 180° for the
-        // second endpoint. Each icon is tinted with the pair colour.
-        if (isArrowBase || isArrowTip) {
+        // Role icons. Active end (base / head) sits top-right;
+        // passive end (tip / tail) sits bottom-right and is rotated 180°.
+        // A cell can show both (e.g. field 35 is both a snake head and
+        // the tail of another snake).
+        function addRoleIcon(position, svg, color, rotated, title) {
           const r = document.createElement('div');
-          r.className = 'role-mark role-mark--arrow' + (isArrowTip ? ' role-mark--flipped' : '');
-          r.innerHTML = iconArrowBase();
-          const color = isArrowBase ? ARROWS[n].color : ARROW_TIP_COLOR[n];
+          r.className = 'role-mark role-mark--' + position + (rotated ? ' role-mark--flipped' : '');
+          r.innerHTML = svg;
           r.style.color = color;
-          r.title = isArrowBase
-            ? `Arrow base — climbs to ${ARROWS[n].to}`
-            : `Arrow tip — destination`;
+          r.title = title;
           cell.appendChild(r);
         }
-        if (isSnakeHead || isSnakeTail) {
-          const r = document.createElement('div');
-          r.className = 'role-mark role-mark--snake' + (isSnakeTail ? ' role-mark--flipped' : '');
-          r.innerHTML = iconSnakeHead();
-          const color = isSnakeHead ? SNAKES[n].color : SNAKE_TAIL_COLOR[n];
-          r.style.color = color;
-          r.title = isSnakeHead
-            ? `Snake head — slides down to ${SNAKES[n].to}`
-            : `Snake tail — landing point`;
-          cell.appendChild(r);
+        if (isArrowBase) {
+          addRoleIcon('top', iconArrowBase(), ARROWS[n].color, false,
+            `Arrow base — climbs to ${ARROWS[n].to}`);
+        } else if (isSnakeHead) {
+          addRoleIcon('top', iconSnakeHead(), SNAKES[n].color, false,
+            `Snake head — slides down to ${SNAKES[n].to}`);
+        }
+        if (isArrowTip) {
+          addRoleIcon('bottom', iconArrowBase(), ARROW_TIP_COLOR[n], true,
+            `Arrow tip — destination`);
+        } else if (isSnakeTail) {
+          addRoleIcon('bottom', iconSnakeHead(), SNAKE_TAIL_COLOR[n], true,
+            `Snake tail — landing point`);
         }
 
         // Tooltip including chakra name if present
         const chakraLabel = chakra ? ` · ${chakra.name}` : '';
         cell.title = `${n}. ${sq.sanskrit} — ${sq.english}${chakraLabel}`;
         board.appendChild(cell);
+        // Observe this cell so its name refits whenever its size changes.
+        cellResizeObserver.observe(cell);
       }
+    }
+    // Fallback: explicitly fit every cell name after the layout settles,
+    // in case the ResizeObserver doesn't fire on the initial render.
+    requestAnimationFrame(() => {
+      $$('.cell').forEach(c => {
+        const name = c.querySelector('.cell-name');
+        if (name) fitCellName(name, c);
+      });
+    });
+  }
+
+  // Per-cell ResizeObserver: any time the cell's box changes, shrink
+  // the inner name's font-size until it fits on one line.
+  const cellResizeObserver = new ResizeObserver(entries => {
+    for (const entry of entries) {
+      const name = entry.target.querySelector('.cell-name');
+      if (name) fitCellName(name, entry.target);
+    }
+  });
+
+  function fitCellName(nameEl, cellEl) {
+    const MAX = 13, MIN = 6;
+    const cellW = cellEl.clientWidth;
+    if (cellW === 0) return; // not yet laid out
+    // The corner icons (top-right + bottom-right) eat space on the right.
+    // The number is in the top-left; vertically-centred name shouldn't
+    // collide with it, so left reservation can be minimal.
+    const reservedLeft = 6;
+    const reservedRight = 26;
+    const maxW = Math.max(24, cellW - reservedLeft - reservedRight);
+    nameEl.style.maxWidth = maxW + 'px';
+    nameEl.style.fontSize = MAX + 'px';
+    let size = MAX;
+    while (nameEl.scrollWidth > maxW && size > MIN) {
+      size -= 0.5;
+      nameEl.style.fontSize = size + 'px';
     }
   }
 
@@ -246,6 +288,9 @@
   }
 
   // ----------------------------- Dice -----------------------------
+  const DICE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+  function dieFace(v) { return DICE_FACES[v - 1]; }
+
   function rollDie() {
     return 1 + Math.floor(Math.random() * 6);
   }
@@ -253,23 +298,20 @@
   function animateDie(dieEl, finalValue) {
     return new Promise(resolve => {
       dieEl.classList.add('rolling');
-      // Flicker through values during animation
       let ticks = 0;
       const interval = setInterval(() => {
         const v = rollDie();
-        dieEl.textContent = v;
+        dieEl.textContent = dieFace(v);
         dieEl.dataset.face = v;
         ticks++;
-        if (ticks >= 5) {
-          clearInterval(interval);
-        }
-      }, 70);
+        if (ticks >= 9) clearInterval(interval);
+      }, 90);
       setTimeout(() => {
         dieEl.classList.remove('rolling');
-        dieEl.textContent = finalValue;
+        dieEl.textContent = dieFace(finalValue);
         dieEl.dataset.face = finalValue;
         resolve();
-      }, 550);
+      }, 950);
     });
   }
 
@@ -293,7 +335,7 @@
     renderEntryDots();
     $('#entry-count').textContent = '0 / 6';
     $('#entry-log').textContent = '';
-    $('#die-entering').textContent = '?';
+    $('#die-entering').textContent = dieFace(3);
     $('#die-entering').dataset.face = '?';
     showPhase('entering');
   });
