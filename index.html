@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Special+Elite&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=7">
+<link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body>
 
@@ -88,11 +88,14 @@
 
         <div class="square-move" id="square-move"></div>
 
-        <p class="square-desc" id="square-desc">—</p>
+        <div class="square-desc-wrap">
+          <p class="square-desc" id="square-desc">—</p>
+          <button class="link square-desc-toggle" id="square-desc-toggle" type="button">Read more</button>
+        </div>
 
         <div class="note-block">
           <label for="square-note" class="plate-label">Your note for this square</label>
-          <textarea id="square-note" placeholder="What does this field reflect about your question?" rows="4"></textarea>
+          <textarea id="square-note" placeholder="What does this field reflect about your question?" rows="3"></textarea>
         </div>
 
         <div class="dice-stage">
@@ -103,6 +106,13 @@
         <div class="playing-meta">
           <span class="meta" id="rolls-count">0 rolls</span>
           <button class="link" id="end-session-btn">End session</button>
+        </div>
+
+        <!-- Inline journey: every prior roll + its note, so the user
+             can see their roadmap while playing. -->
+        <div class="journey" id="journey">
+          <div class="plate-label">Your journey</div>
+          <ol class="journey-list" id="journey-list"></ol>
         </div>
       </div>
     </div>
@@ -166,7 +176,18 @@
   </div>
 </div>
 
-<script src="data/squares.js?v=7"></script>
-<script src="app.js?v=7"></script>
+<!-- Floating tooltip shown on cell hover -->
+<div class="cell-tooltip" id="cell-tooltip" hidden>
+  <div class="cell-tooltip-head">
+    <span class="cell-tooltip-num" id="ct-num"></span>
+    <span class="cell-tooltip-name" id="ct-name"></span>
+  </div>
+  <div class="cell-tooltip-eng" id="ct-eng"></div>
+  <div class="cell-tooltip-desc" id="ct-desc"></div>
+  <div class="cell-tooltip-meta" id="ct-meta"></div>
+</div>
+
+<script src="data/squares.js?v=8"></script>
+<script src="app.js?v=8"></script>
 </body>
 </html>

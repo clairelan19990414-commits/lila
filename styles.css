@@ -343,12 +343,25 @@ textarea:focus, input:focus {
 }
 .square-move.arrow { color: var(--indigo); background: rgba(63, 65, 112, 0.08); }
 .square-move.snake { color: var(--terra); background: rgba(139, 74, 54, 0.08); }
+.square-desc-wrap { margin: 0 0 22px; }
 .square-desc {
   color: var(--ink-soft);
-  margin: 0 0 24px;
+  margin: 0 0 8px;
   font-size: 15px;
   line-height: 1.7;
   white-space: pre-wrap;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  transition: -webkit-line-clamp 0.2s;
+}
+.square-desc.expanded {
+  -webkit-line-clamp: unset;
+  display: block;
+}
+.square-desc-toggle {
+  font-size: 10px;
 }
 .note-block {
   margin-bottom: 22px;
@@ -365,6 +378,128 @@ textarea:focus, input:focus {
   padding-top: 16px;
   border-top: 1px dashed var(--rule);
 }
+
+/* In-play journey: compact list of past rolls + notes */
+.journey {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--rule);
+}
+.journey .plate-label { margin-bottom: 12px; }
+.journey-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.journey-item {
+  padding: 8px 10px;
+  background: var(--bone);
+  border: 1px solid var(--rule-soft);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.journey-item-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.journey-item-roll {
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-soft);
+}
+.journey-item-sq {
+  font-family: var(--ff-display);
+  font-size: 13px;
+  color: var(--ink);
+}
+.journey-item-eng {
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.journey-item-note {
+  margin: 4px 0 0;
+  color: var(--ink-soft);
+  font-style: italic;
+  white-space: pre-wrap;
+}
+.journey-empty {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--ink-soft);
+  text-align: center;
+  padding: 16px 0;
+}
+
+/* ------------------------------- Cell hover tooltip ------------------------------- */
+.cell-tooltip {
+  position: fixed;
+  z-index: 100;
+  width: 280px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  box-shadow: 0 8px 28px rgba(43, 36, 21, 0.18);
+  pointer-events: none;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.cell-tooltip-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.cell-tooltip-num {
+  font-family: var(--ff-display);
+  font-size: 22px;
+  color: var(--ochre-deep);
+  line-height: 1;
+}
+.cell-tooltip-name {
+  font-family: var(--ff-display);
+  font-size: 16px;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+.cell-tooltip-eng {
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--ink-soft);
+  margin-bottom: 8px;
+}
+.cell-tooltip-desc {
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.cell-tooltip-meta {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--rule);
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+.cell-tooltip-meta:empty { display: none; padding: 0; margin: 0; border: none; }
 
 /* ------------------------------- Board ------------------------------- */
 .board-frame {

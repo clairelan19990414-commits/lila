@@ -219,6 +219,10 @@
         // Tooltip including chakra name if present
         const chakraLabel = chakra ? ` · ${chakra.name}` : '';
         cell.title = `${n}. ${sq.sanskrit} — ${sq.english}${chakraLabel}`;
+        // Hover handlers for the floating tooltip.
+        cell.addEventListener('mouseenter', e => showCellTooltip(n, e.currentTarget));
+        cell.addEventListener('mouseleave', hideCellTooltip);
+
         board.appendChild(cell);
         // Observe this cell so its name refits whenever its size changes.
         cellResizeObserver.observe(cell);
@@ -433,9 +437,80 @@
 
     // Load any existing note for the most recent roll into the note box
     $('#square-note').value = (last && last.note) || '';
+
+    // Reset the description to collapsed each time the square changes.
+    const descEl = $('#square-desc');
+    const toggle = $('#square-desc-toggle');
+    descEl.classList.remove('expanded');
+    toggle.textContent = 'Read more';
+    // Hide the toggle if the description fits in the clamp already.
+    // We detect overflow by comparing scroll height to client height.
+    requestAnimationFrame(() => {
+      const overflows = descEl.scrollHeight > descEl.clientHeight + 2;
+      toggle.style.display = overflows ? '' : 'none';
+    });
+
+    // Re-render the in-play journey list every time the square changes.
+    renderJourney();
   }
 
-  // Save note as user types (debounced).
+  // Description fold/unfold
+  $('#square-desc-toggle').addEventListener('click', () => {
+    const descEl = $('#square-desc');
+    const toggle = $('#square-desc-toggle');
+    descEl.classList.toggle('expanded');
+    toggle.textContent = descEl.classList.contains('expanded') ? 'Show less' : 'Read more';
+  });
+
+  // ----------------------------- In-play journey list -----------------------------
+  function renderJourney() {
+    const list = $('#journey-list');
+    if (!list) return;
+    list.innerHTML = '';
+    if (!state.rolls || state.rolls.length === 0) {
+      const empty = document.createElement('li');
+      empty.className = 'journey-empty';
+      empty.textContent = 'No rolls yet.';
+      list.appendChild(empty);
+      return;
+    }
+    state.rolls.forEach((r, i) => {
+      const fsq = SQ_BY_N[r.finalSq];
+      const li = document.createElement('li');
+      li.className = 'journey-item';
+      const head = document.createElement('div');
+      head.className = 'journey-item-head';
+      const rollNum = document.createElement('span');
+      rollNum.className = 'journey-item-roll';
+      rollNum.textContent = (i === 0 && r.entry) ? 'Entry' : ('R' + (i + 1));
+      const sq = document.createElement('span');
+      sq.className = 'journey-item-sq';
+      sq.textContent = r.finalSq + '. ' + fsq.sanskrit;
+      head.appendChild(rollNum);
+      head.appendChild(sq);
+      li.appendChild(head);
+      const eng = document.createElement('div');
+      eng.className = 'journey-item-eng';
+      let movement = fsq.english;
+      if (r.arrow) movement += ' · arrow from ' + r.landedSq;
+      else if (r.snake) movement += ' · snake from ' + r.landedSq;
+      else if (r.overshoot) movement += ' · overshoot';
+      eng.textContent = movement;
+      li.appendChild(eng);
+      if (r.note && r.note.trim()) {
+        const note = document.createElement('p');
+        note.className = 'journey-item-note';
+        note.textContent = '“' + r.note.trim() + '”';
+        li.appendChild(note);
+      }
+      list.appendChild(li);
+    });
+    // Scroll to the bottom so the latest roll is visible.
+    list.scrollTop = list.scrollHeight;
+  }
+
+  // Save note as user types (debounced). Also refresh the in-play
+  // journey list so the user sees their note appear immediately.
   let noteSaveTimer = null;
   $('#square-note').addEventListener('input', (e) => {
     clearTimeout(noteSaveTimer);
@@ -444,6 +519,7 @@
       if (last) {
         last.note = e.target.value;
         persistSession();
+        renderJourney();
       }
     }, 250);
   });
@@ -558,6 +634,8 @@
     $('#question-input').value = '';
     $('#question-input').style.borderColor = '';
     $('#session-meta').textContent = 'Session — new';
+    const list = $('#journey-list');
+    if (list) list.innerHTML = '';
     showPhase('question');
     updateBoardHighlight();
   }
@@ -733,6 +811,49 @@
       alert('Could not copy. Select and copy manually.');
     }
   });
+
+  // ----------------------------- Cell hover tooltip -----------------------------
+  const tooltip = $('#cell-tooltip');
+  function showCellTooltip(n, cellEl) {
+    const sq = SQ_BY_N[n];
+    if (!sq || !tooltip) return;
+    $('#ct-num').textContent = n;
+    $('#ct-name').textContent = sq.sanskrit;
+    $('#ct-eng').textContent = sq.english;
+    // Brief: first sentence of the description (up to first period+space).
+    const firstSentence = (sq.desc.split(/\.\s+/)[0] || sq.desc).trim() + '.';
+    $('#ct-desc').textContent = firstSentence;
+    // Meta line: arrow / snake / chakra annotations.
+    const metaParts = [];
+    if (ARROWS[n])         metaParts.push('Arrow → field ' + ARROWS[n].to);
+    if (ARROW_TIP_COLOR[n]) metaParts.push('Arrow tip from below');
+    if (SNAKES[n])         metaParts.push('Snake → field ' + SNAKES[n].to);
+    if (SNAKE_TAIL_COLOR[n]) metaParts.push('Snake tail');
+    if (CHAKRAS[n])        metaParts.push(CHAKRAS[n].name + ' chakra');
+    if (sq.goal)           metaParts.push('Goal — cosmic consciousness');
+    $('#ct-meta').textContent = metaParts.join(' · ');
+
+    // Position: prefer right side of cell, flip to left if no room.
+    tooltip.hidden = false;
+    const rect = cellEl.getBoundingClientRect();
+    const tipRect = tooltip.getBoundingClientRect();
+    const margin = 10;
+    let left = rect.right + margin;
+    if (left + tipRect.width > window.innerWidth - 12) {
+      left = rect.left - tipRect.width - margin;
+    }
+    if (left < 12) left = 12;
+    let top = rect.top + (rect.height / 2) - (tipRect.height / 2);
+    if (top < 12) top = 12;
+    if (top + tipRect.height > window.innerHeight - 12) {
+      top = window.innerHeight - tipRect.height - 12;
+    }
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+  }
+  function hideCellTooltip() {
+    if (tooltip) tooltip.hidden = true;
+  }
 
   // ----------------------------- Legend -----------------------------
   function renderLegend() {
