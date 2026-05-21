@@ -583,22 +583,27 @@ textarea:focus, input:focus {
   pointer-events: none;
 }
 .cell-name {
-  /* Barlow Semi Condensed is ~25% narrower than Inter at the same
-     size, so long names like naraka-loka fit at a readable size. */
-  font-family: 'Barlow Semi Condensed', var(--ff-body);
-  font-weight: 600;
+  /* Use Inter so the cell text matches the panel/notepad font.
+     Names break onto a second line at the hyphen when needed so we
+     can keep a comfortable point size instead of shrinking the text. */
+  font-family: var(--ff-body);
+  font-weight: 500;
   font-size: 13px;
-  line-height: 1.05;
+  line-height: 1.15;
   color: var(--ink);
   text-align: center;
   letter-spacing: -0.005em;
   text-transform: lowercase;
-  white-space: nowrap !important;
-  word-break: keep-all !important;
-  overflow-wrap: normal !important;
-  hyphens: none !important;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: none;
   width: 100%;
-  /* font-size set inline by JS to auto-fit. */
+  /* Limit to two lines — anything longer would push the layout. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 /* Cell borders/backgrounds for role cells are set inline via JS
    so both endpoints of each snake / arrow share the same colour. */

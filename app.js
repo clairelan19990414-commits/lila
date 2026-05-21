@@ -169,9 +169,9 @@
 
         const name = document.createElement('div');
         name.className = 'cell-name';
-        // Use a U+2011 non-breaking hyphen so the browser can never wrap
-        // at a hyphen — regardless of any CSS quirk in white-space handling.
-        name.textContent = sq.sanskrit.toLowerCase().replace(/-/g, '‑');
+        // Regular hyphens — long names break naturally at the hyphen
+        // onto a second line rather than shrinking the font.
+        name.textContent = sq.sanskrit.toLowerCase();
         cell.appendChild(name);
 
         // Pick the pair colour for this cell (priority: arrow base > arrow tip
@@ -248,23 +248,14 @@
   });
 
   function fitCellName(nameEl, cellEl) {
-    // Floor is 10px so the text always stays comfortably readable.
-    // If even at 10px the text wouldn't fit, we let it ride at 10px
-    // and the cell's overflow: hidden clips the tail — which is rare
-    // and only happens at very narrow viewports.
-    const MAX = 14, MIN = 10;
+    // Names use a fixed 13px Inter and wrap to a 2nd line when needed.
+    // The auto-fit just sets the max width so the wrapping breaks
+    // inside the cell — no font-size shrinkage.
     const cellW = cellEl.clientWidth;
     if (cellW === 0) return;
-    const reservedLeft = 4;
-    const reservedRight = 20;
-    const maxW = Math.max(24, cellW - reservedLeft - reservedRight);
+    const reservedRight = 20; // room for the corner icons
+    const maxW = Math.max(24, cellW - 4 - reservedRight);
     nameEl.style.maxWidth = maxW + 'px';
-    nameEl.style.fontSize = MAX + 'px';
-    let size = MAX;
-    while (nameEl.scrollWidth > maxW && size > MIN) {
-      size -= 0.5;
-      nameEl.style.fontSize = size + 'px';
-    }
   }
 
   function updateBoardHighlight() {
