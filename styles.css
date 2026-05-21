@@ -17,9 +17,12 @@
   --rule:        #d8d4c5;
   --rule-soft:   #e7e3d6;
 
+  /* Two fonts only: Special Elite for display, Inter for everything
+     else. --ff-mono kept as an alias so existing rules don't need
+     touching, but it now points to Inter. */
   --ff-display:  'Special Elite', 'Courier New', serif;
   --ff-body:     'Inter', system-ui, sans-serif;
-  --ff-mono:     'JetBrains Mono', ui-monospace, monospace;
+  --ff-mono:     'Inter', system-ui, sans-serif;
 
   --radius-sm:   8px;
   --radius:      14px;
@@ -48,7 +51,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding: 26px 44px 22px;
+  padding: 18px 36px 14px;
   border-bottom: 1px solid var(--rule);
   background: var(--bone);
 }
@@ -267,7 +270,7 @@ textarea:focus, input:focus {
   width: 76px; height: 76px;
   border: 1.5px solid var(--ink);
   background: var(--paper);
-  font-family: 'Helvetica Neue', system-ui, sans-serif;
+  font-family: var(--ff-body);
   font-size: 56px;
   line-height: 1;
   display: flex;
@@ -512,9 +515,9 @@ textarea:focus, input:focus {
 .board-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 18px;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
+  gap: 14px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
   border-bottom: 1px solid var(--rule);
 }
 .legend-item {
@@ -554,6 +557,12 @@ textarea:focus, input:focus {
   grid-template-rows: repeat(8, 1fr);
   gap: 5px;
   aspect-ratio: 9 / 8;
+  /* Keep the whole board on one screen — scale down when the viewport
+     height is the tighter constraint. */
+  max-height: calc(100vh - 220px);
+  max-width: 100%;
+  width: auto;
+  margin: 0 auto;
   position: relative;
 }
 .cell {
@@ -666,7 +675,7 @@ textarea:focus, input:focus {
   text-transform: uppercase;
   letter-spacing: 0.18em;
   color: var(--ink-soft);
-  margin-top: 16px;
+  margin-top: 10px;
   text-align: center;
 }
 
