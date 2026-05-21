@@ -451,7 +451,7 @@ textarea:focus, input:focus {
 .cell-tooltip {
   position: fixed;
   z-index: 100;
-  width: 280px;
+  width: 320px;
   background: var(--paper);
   border: 1px solid var(--rule);
   border-radius: var(--radius-sm);
@@ -494,15 +494,19 @@ textarea:focus, input:focus {
   line-height: 1.55;
 }
 .cell-tooltip-meta {
-  margin-top: 8px;
-  padding-top: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px dashed var(--rule);
-  font-family: var(--ff-mono);
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
 }
 .cell-tooltip-meta:empty { display: none; padding: 0; margin: 0; border: none; }
+.ct-meta-line {
+  font-family: var(--ff-body);
+  font-size: 11px;
+  color: var(--ink);
+  line-height: 1.45;
+  margin-bottom: 3px;
+}
+.ct-meta-line:last-child { margin-bottom: 0; }
 
 /* ------------------------------- Board ------------------------------- */
 .board-frame {

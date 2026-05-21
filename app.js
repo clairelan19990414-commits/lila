@@ -51,15 +51,23 @@
   // ----------------------------- SVG icon library -----------------------------
   // Distinct symbols for the four directional roles + clean chakra line art.
 
-  // Computed once: which fields are arrow tips / snake tails,
-  // and which pair-color a tip / tail belongs to.
-  const ARROW_TIP_COLOR  = {};   // field -> color
-  const SNAKE_TAIL_COLOR = {};   // field -> color (first match wins if multiple)
+  // Computed once: which fields are arrow tips / snake tails, the
+  // colour of the pair, and which source field(s) end here. The
+  // "from" lookups let us name *which* snake or arrow lands on a tail
+  // / tip in the hover tooltip — important for fields like 35 that
+  // are both a snake head and a snake tail of a different snake.
+  const ARROW_TIP_COLOR  = {};
+  const SNAKE_TAIL_COLOR = {};
+  const ARROW_TIP_FROM   = {};
+  const SNAKE_TAIL_FROM  = {};
   for (const [from, info] of Object.entries(ARROWS)) {
     ARROW_TIP_COLOR[info.to] = info.color;
+    ARROW_TIP_FROM[info.to]  = +from;
   }
   for (const [from, info] of Object.entries(SNAKES)) {
     if (!SNAKE_TAIL_COLOR[info.to]) SNAKE_TAIL_COLOR[info.to] = info.color;
+    if (!SNAKE_TAIL_FROM[info.to])  SNAKE_TAIL_FROM[info.to]  = [];
+    SNAKE_TAIL_FROM[info.to].push(+from);
   }
   const ARROW_TIPS  = new Set(Object.keys(ARROW_TIP_COLOR).map(Number));
   const SNAKE_TAILS = new Set(Object.keys(SNAKE_TAIL_COLOR).map(Number));
@@ -815,15 +823,31 @@
     // Brief: first sentence of the description (up to first period+space).
     const firstSentence = (sq.desc.split(/\.\s+/)[0] || sq.desc).trim() + '.';
     $('#ct-desc').textContent = firstSentence;
-    // Meta line: arrow / snake / chakra annotations.
-    const metaParts = [];
-    if (ARROWS[n])         metaParts.push('Arrow → field ' + ARROWS[n].to);
-    if (ARROW_TIP_COLOR[n]) metaParts.push('Arrow tip from below');
-    if (SNAKES[n])         metaParts.push('Snake → field ' + SNAKES[n].to);
-    if (SNAKE_TAIL_COLOR[n]) metaParts.push('Snake tail');
-    if (CHAKRAS[n])        metaParts.push(CHAKRAS[n].name + ' chakra');
-    if (sq.goal)           metaParts.push('Goal — cosmic consciousness');
-    $('#ct-meta').textContent = metaParts.join(' · ');
+    // Meta — explain every gameplay role this cell holds. Some cells
+    // (e.g. field 35) are both a snake head AND a snake tail of a
+    // different snake; the user needs to see both clearly.
+    const metaLines = [];
+    if (ARROWS[n]) {
+      const dest = ARROWS[n].to;
+      metaLines.push('↑ Arrow base — climbs to field ' + dest + ' (' + SQ_BY_N[dest].sanskrit + ')');
+    }
+    if (ARROW_TIP_FROM[n]) {
+      const src = ARROW_TIP_FROM[n];
+      metaLines.push('↑ Arrow tip — landing from field ' + src + ' (' + SQ_BY_N[src].sanskrit + ')');
+    }
+    if (SNAKES[n]) {
+      const dest = SNAKES[n].to;
+      metaLines.push('∽ Snake head — slides to field ' + dest + ' (' + SQ_BY_N[dest].sanskrit + ')');
+    }
+    if (SNAKE_TAIL_FROM[n]) {
+      const srcs = SNAKE_TAIL_FROM[n];
+      const label = srcs.map(s => s + ' (' + SQ_BY_N[s].sanskrit + ')').join(' and ');
+      metaLines.push('∽ Snake tail — landing from field ' + label);
+    }
+    if (CHAKRAS[n]) metaLines.push('✦ ' + CHAKRAS[n].name + ' chakra');
+    if (sq.goal)    metaLines.push('◉ Goal — cosmic consciousness');
+    const ctMeta = $('#ct-meta');
+    ctMeta.innerHTML = metaLines.map(l => '<div class="ct-meta-line">' + l + '</div>').join('');
 
     // Position: prefer right side of cell, flip to left if no room.
     tooltip.hidden = false;
