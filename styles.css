@@ -583,15 +583,15 @@ textarea:focus, input:focus {
   pointer-events: none;
 }
 .cell-name {
-  /* Inter is much narrower than Special Elite, fits long names without
-     needing a microscopic font size. */
-  font-family: var(--ff-body);
-  font-weight: 500;
-  font-size: 11px;
+  /* Barlow Semi Condensed is ~25% narrower than Inter at the same
+     size, so long names like naraka-loka fit at a readable size. */
+  font-family: 'Barlow Semi Condensed', var(--ff-body);
+  font-weight: 600;
+  font-size: 13px;
   line-height: 1.05;
   color: var(--ink);
   text-align: center;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.005em;
   text-transform: lowercase;
   white-space: nowrap !important;
   word-break: keep-all !important;
@@ -609,8 +609,8 @@ textarea:focus, input:focus {
    keeping the number (top-left) and name (centre) clear. */
 .role-mark {
   position: absolute;
-  width: 20px;
-  height: 20px;
+  width: 17px;
+  height: 17px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -618,8 +618,8 @@ textarea:focus, input:focus {
   z-index: 1;
 }
 .role-mark svg { width: 100%; height: 100%; display: block; transition: transform 0.2s; }
-.role-mark--top    { top: 3px; right: 3px; }
-.role-mark--bottom { bottom: 3px; right: 3px; }
+.role-mark--top    { top: 2px; right: 2px; }
+.role-mark--bottom { bottom: 2px; right: 2px; }
 
 /* Flipped variant — same shape, rotated 180° to indicate the
    second endpoint of a snake or arrow (tail / tip). */

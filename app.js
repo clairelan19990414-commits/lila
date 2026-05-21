@@ -248,14 +248,15 @@
   });
 
   function fitCellName(nameEl, cellEl) {
-    const MAX = 13, MIN = 6;
+    // Floor is 10px so the text always stays comfortably readable.
+    // If even at 10px the text wouldn't fit, we let it ride at 10px
+    // and the cell's overflow: hidden clips the tail — which is rare
+    // and only happens at very narrow viewports.
+    const MAX = 14, MIN = 10;
     const cellW = cellEl.clientWidth;
-    if (cellW === 0) return; // not yet laid out
-    // The corner icons (top-right + bottom-right) eat space on the right.
-    // The number is in the top-left; vertically-centred name shouldn't
-    // collide with it, so left reservation can be minimal.
-    const reservedLeft = 6;
-    const reservedRight = 26;
+    if (cellW === 0) return;
+    const reservedLeft = 4;
+    const reservedRight = 20;
     const maxW = Math.max(24, cellW - reservedLeft - reservedRight);
     nameEl.style.maxWidth = maxW + 'px';
     nameEl.style.fontSize = MAX + 'px';
